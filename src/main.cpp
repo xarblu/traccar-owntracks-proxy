@@ -200,6 +200,7 @@ int main(int argc, char *argv[]) {
         }
 
         // location.coords
+        // see https://docs.transistorsoft.com/flutter/Coords/
         // Accuracy | Traccar: float, meters | Owntracks: int, meters
         if (auto &val = traccar_json["location"]["coords"]["accuracy"]; val.is_number()) {
             owntracks_json["acc"] = val;
@@ -210,7 +211,9 @@ int main(int argc, char *argv[]) {
         }
         // Heading | Traccar: float, degrees | Owntracks: int, degrees
         if (auto &val = traccar_json["location"]["coords"]["heading"]; val.is_number()) {
-            owntracks_json["cog"] = val;
+            if (auto deg = val.get<float>(); deg >= 0.0) {
+                owntracks_json["cog"] = deg;
+            }
         }
         // Latitude coordinate | Traccar: float | Owntracks: float
         if (auto &val = traccar_json["location"]["coords"]["latitude"]; val.is_number()) {
@@ -220,9 +223,11 @@ int main(int argc, char *argv[]) {
         if (auto &val = traccar_json["location"]["coords"]["longitude"]; val.is_number()) {
             owntracks_json["lon"] = val;
         }
-        // Velocity | Traccar: float, km/h (?) | Owntracks: int, km/h
+        // Velocity | Traccar: float, m/s | Owntracks: int, km/h
         if (auto &val = traccar_json["location"]["coords"]["speed"]; val.is_number()) {
-            owntracks_json["vel"] = val;
+            if (auto km_h = val.get<float>() * 3.6; km_h >= 0.0) {
+                owntracks_json["vel"] = km_h;
+            }
         }
 
         // location.*
