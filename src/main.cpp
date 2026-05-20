@@ -283,7 +283,7 @@ int main(int argc, char *argv[]) {
     });
 
     std::cout << "Starting server\n";
-    server.listen("0.0.0.0", 8080);
+    server.listen(server_addr, server_port);
 
     std::cout << "Stopped server\n";
     return 0;
