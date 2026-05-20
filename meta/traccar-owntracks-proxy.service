@@ -1,0 +1,9 @@
+[Unit]
+Description=Traccar Owntracks Proxy
+
+[Service]
+ExecStart=/usr/bin/traccar-owntracks-proxy
+DynamicUser=true
+
+[Install]
+WantedBy=multi-user.target
