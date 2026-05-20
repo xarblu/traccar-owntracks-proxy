@@ -154,6 +154,11 @@ int main(int argc, char *argv[]) {
         std::cout << "Traccar:\n" << traccar_json.dump(2) << "\n";
 
         // validate rough structure
+        if (!traccar_json["device_id"].is_string()) {
+            res.status = httplib::StatusCode::BadRequest_400;
+            res.set_content("Bad or missing field: device_id\n", "text/plain");
+            return;
+        }
         if (!traccar_json["location"].is_object()) {
             res.status = httplib::StatusCode::BadRequest_400;
             res.set_content("Bad or missing field: location\n", "text/plain");
@@ -188,6 +193,11 @@ int main(int argc, char *argv[]) {
 
         // ID of the device
         owntracks_json["tid"] = traccar_json["device_id"];
+
+        // dawarich uses this to determine whether to convert km/h to m/s
+        // (https://github.com/Freika/dawarich/blob/1.7.8/app/services/own_tracks/params.rb#L79)
+        // let's just spoof it to any non-empty string
+        owntracks_json["topic"] = "owntracks/tracca-owntracks-proxy/" + traccar_json["device_id"].get<std::string>();
 
         // TODO: remap location.activity
 
