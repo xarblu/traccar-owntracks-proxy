@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 4.1.0)
 
 project(traccar-owntracks-project
-    VERSION 0.2.2
+    VERSION 0.2.3
     LANGUAGES CXX
 )
 
