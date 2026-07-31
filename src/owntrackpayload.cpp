@@ -43,5 +43,19 @@ std::expected<OwntracksPayload, std::string> OwntracksPayload::fromParams(const 
         if (p.location[key].is_null()) return std::unexpected{std::format("Missing required field: {}", key)};
     }
 
+    p.stripNull();
+
     return std::move(p);
+}
+
+void OwntracksPayload::stripNull() {
+    nlohmann::json stripped = location;
+
+    for (auto it = location.begin(); it != location.end(); it++) {
+        if (it.value().is_null()) {
+            stripped.erase(it.key());
+        }
+    }
+
+    location = stripped;
 }

@@ -47,4 +47,9 @@ struct OwntracksPayload {
      * (as in https://github.com/traccar/traccar-client-sdk/blob/v1.0.8/core/src/commonMain/kotlin/org/traccar/client/HttpUploader.kt)
      */
     static std::expected<OwntracksPayload, std::string> fromParams(const httplib::Params &params);
+
+    /**
+     * Strip all null values from the contained location field
+     */
+    void stripNull();
 };
