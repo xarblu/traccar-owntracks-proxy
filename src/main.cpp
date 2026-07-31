@@ -116,7 +116,10 @@ int main(int argc, char *argv[]) {
         const auto payload = OwntracksPayload::fromParams(req.params);
         if (!payload) {
             std::cout << "Failed to parse payload: " << payload.error() << "\n";
-            res.status = httplib::BadRequest_400;
+            // "Accepted" in the sense that we looked at it and won't
+            // process it any further; sadly we need a 2XX code or the client
+            // will resend its bad request forever
+            res.status = httplib::Accepted_202;
             res.set_content(payload.error(), "text/plain");
             return;
         }
