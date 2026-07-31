@@ -3,6 +3,7 @@ add_executable(traccar-owntracks-proxy)
 target_sources(traccar-owntracks-proxy
     PRIVATE
         main.cpp
+        owntrackpayload.cpp
 )
 
 target_include_directories(traccar-owntracks-proxy
