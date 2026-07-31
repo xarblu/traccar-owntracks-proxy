@@ -4,8 +4,8 @@
 #include <format>
 
 static inline double knotsToKilometersPerHour(double knots) {
-    constexpr auto multiplier{3.6 / 1.94384};
-    return knots * multiplier;
+    // according to wikipedia 1kn is defined as *exactly* 1.852 km/h
+    return knots * 1.852;
 }
 
 std::expected<OwntracksPayload, std::string> OwntracksPayload::fromParams(const httplib::Params &params) {
