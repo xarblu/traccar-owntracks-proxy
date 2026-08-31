@@ -15,6 +15,7 @@ int main(int argc, char *argv[]) {
     std::string server_addr{"0.0.0.0"};
     uint server_port{8080};
     std::optional<std::string> owntracks_url{};
+    std::optional<double> accuracyFilter{};
 
     for (int i = 1; i < argc; i++) {
         std::string_view arg{argv[i]};
@@ -46,6 +47,19 @@ int main(int argc, char *argv[]) {
                 return 1;
             }
             owntracks_url = argv[++i];
+        }
+
+        else if (arg == "--accuracy-filter") {
+            if (i + 1 >= argc) {
+                std::cerr << "Argument " << arg << " requires a value\n";
+                return 1;
+            }
+            try {
+                accuracyFilter = std::stod(argv[++i]);
+            } catch (std::invalid_argument e) {
+                std::cerr << "Invalid double for argument: " << arg << "\n";
+                return 1;
+            }
         }
 
         else {
@@ -122,6 +136,28 @@ int main(int argc, char *argv[]) {
             res.status = httplib::Accepted_202;
             res.set_content(payload.error(), "text/plain");
             return;
+        }
+
+        if (accuracyFilter) {
+            // treat null as bad accuracy if the filter is enabled
+            if (payload->location["acc"].is_null()) {
+                res.status = httplib::Accepted_202;
+                res.set_content("Point filtered - no accuracy", "text/plain");
+                return;
+            }
+
+            // we explicitly parse via stod so this is guaranteed to be a double
+            if (const double acc = payload->location["acc"].get<double>(); acc > *accuracyFilter) {
+                res.status = httplib::Accepted_202;
+                res.set_content(
+                    std::format(
+                        "Point filtered - accuracy below threshold (got {:.3f} required {:.3f})",
+                        acc, *accuracyFilter
+                    ),
+                    "text/plain"
+                );
+                return;
+            }
         }
 
         std::cout << "As Owntracks JSON:\n" << payload->location.dump(2) << "\n";
