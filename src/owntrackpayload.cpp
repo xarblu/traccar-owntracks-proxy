@@ -73,7 +73,7 @@ void OwntracksPayload::stripNull() {
 }
 
 std::string OwntracksPayload::forwardUrlEncoded() const {
-    std::string s;
+    std::string s{};
     for (auto it = forward.begin(); it != forward.end();) {
         s.append(httplib::encode_uri_component(it->first));
         s.append("=");
