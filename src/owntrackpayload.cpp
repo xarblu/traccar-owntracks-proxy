@@ -18,23 +18,23 @@ std::expected<OwntracksPayload, std::string> OwntracksPayload::fromParams(const 
 
     try {
         for (const auto &[key, value] : params) {
-            // extra keys handled by us
-            if (key == "api_key") p.apiKey = value;
-
             // traccar keys parsed in order of
             // https://github.com/traccar/traccar-client-sdk/blob/v1.0.8/core/src/commonMain/kotlin/org/traccar/client/HttpUploader.kt
-            if (key == "id") p.location["tid"] = value;
-            if (key == "lat") p.location["lat"] = std::stod(value);
-            if (key == "lon") p.location["lon"] = std::stod(value);
-            if (key == "timestamp") p.location["tst"] = std::stod(value);
-            if (key == "accuracy") p.location["acc"] = std::stod(value);
-            if (key == "altitude") p.location["alt"] = std::stod(value);
-            // for some reason traccar has speed in knots
-            if (key == "speed") p.location["vel"] = knotsToKilometersPerHour(std::stod(value));
-            if (key == "bearing") p.location["cog"] = std::stod(value);
-            if (key == "batt") p.location["batt"] = std::stod(value);
-            if (key == "charge") p.location["bs"] = value == "true" ? 2 : 1;
-            // unhandled "alarm"
+            if (key == "id") { p.location["tid"] = value; continue; }
+            if (key == "lat") { p.location["lat"] = std::stod(value); continue; }
+            if (key == "lon") { p.location["lon"] = std::stod(value); continue; }
+            if (key == "timestamp") { p.location["tst"] = std::stod(value); continue; }
+            if (key == "accuracy") { p.location["acc"] = std::stod(value); continue; }
+            if (key == "altitude") { p.location["alt"] = std::stod(value); continue; }
+            // for some reason traccar has speed in knots continue; }
+            if (key == "speed") { p.location["vel"] = knotsToKilometersPerHour(std::stod(value)); continue; }
+            if (key == "bearing") { p.location["cog"] = std::stod(value); continue; }
+            if (key == "batt") { p.location["batt"] = std::stod(value); continue; }
+            if (key == "charge") { p.location["bs"] = value == "true" ? 2 : 1; continue; }
+            if (key == "alarm") { /* ignored */ continue; }
+
+            // forwarded
+            p.forward.emplace(key, value);
         }
     } catch (...) {
         return std::unexpected{"Failed to parse number value"};
@@ -48,9 +48,9 @@ std::expected<OwntracksPayload, std::string> OwntracksPayload::fromParams(const 
 
     if (!missing.empty()) {
         std::string err{"Missing required fields: "};
-        for (auto it = missing.begin(); it != missing.end(); it++) {
+        for (auto it = missing.begin(); it != missing.end();) {
             err.append(*it);
-            if (it + 1 != missing.end()) err.append(", ");
+            if (++it != missing.end()) err.append(", ");
         }
         return std::unexpected{err};
     }
@@ -70,4 +70,15 @@ void OwntracksPayload::stripNull() {
     }
 
     location = stripped;
+}
+
+std::string OwntracksPayload::forwardUrlEncoded() const {
+    std::string s;
+    for (auto it = forward.begin(); it != forward.end();) {
+        s.append(httplib::encode_uri_component(it->first));
+        s.append("=");
+        s.append(httplib::encode_uri_component(it->second));
+        if (++it != forward.end()) s.append("&");
+    }
+    return s;
 }

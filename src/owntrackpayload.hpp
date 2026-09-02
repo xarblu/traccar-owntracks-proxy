@@ -6,9 +6,10 @@
 #include <expected>
 
 struct OwntracksPayload {
-    // api key used for forwarding
-    std::string apiKey{};
+    // unhandled query params are forwarded
+    httplib::Params forward{};
 
+    // location payload
     nlohmann::json location{
         // required metadata
         {"_type", "location"},
@@ -52,4 +53,10 @@ struct OwntracksPayload {
      * Strip all null values from the contained location field
      */
     void stripNull();
+
+    /**
+     * forward field as a URL encoded string
+     * note that the leading ? is not included
+     */
+    std::string forwardUrlEncoded() const;
 };

@@ -153,7 +153,7 @@ int main(int argc, char *argv[]) {
             }
 
             if (filtered) {
-                std::cerr << *filtered << "\n";
+                std::cout << *filtered << "\n";
                 res.status = httplib::Accepted_202;
                 res.set_content(*filtered, "text/plain");
                 return;
@@ -161,15 +161,16 @@ int main(int argc, char *argv[]) {
         }
 
         std::cout << "As Owntracks JSON:\n" << payload->location.dump(2) << "\n";
-
-        std::string params{};
-        if (!payload->apiKey.empty()) {
-            params += "?api_key=" + payload->apiKey;
+        std::cout << "Forwarded query parameters:";
+        for (auto it = payload->forward.begin(); it != payload->forward.end();) {
+            std::cout << it->first;
+            if (++it != payload->forward.end()) std::cout << " ";
         }
+        std::cout << "\n";
 
         {
             std::lock_guard lock{client_mutex};
-            auto client_res = client.Post(owntracks_netloc.value() + params,
+            auto client_res = client.Post(owntracks_netloc.value() + "?" + payload->forwardUrlEncoded(),
                                           payload->location.dump(),
                                           "application/json");
 
