@@ -2,6 +2,8 @@
 
 #include <expected>
 #include <format>
+#include <vector>
+#include <string>
 
 static inline double knotsToKilometersPerHour(double knots) {
     // according to wikipedia 1kn is defined as *exactly* 1.852 km/h
@@ -39,8 +41,18 @@ std::expected<OwntracksPayload, std::string> OwntracksPayload::fromParams(const 
     }
 
     // required fields
+    std::vector<const char*> missing{};
     for (const auto &key : {"tid", "lat", "lon", "tst"}) {
-        if (p.location[key].is_null()) return std::unexpected{std::format("Missing required field: {}", key)};
+        if (p.location[key].is_null()) missing.emplace_back(key);
+    }
+
+    if (!missing.empty()) {
+        std::string err{"Missing required fields: "};
+        for (auto it = missing.begin(); it != missing.end(); it++) {
+            err.append(*it);
+            if (it + 1 != missing.end()) err.append(", ");
+        }
+        return std::unexpected{err};
     }
 
     p.stripNull();
