@@ -112,6 +112,8 @@ int main(int argc, char *argv[]) {
     httplib::Client client{owntracks_host.value()};
     std::mutex client_mutex{};
 
+    // TODO: change to handle any POST
+    // (path doesn't matter to us)
     server.Post("/api/v1/traccar/points", [&](const httplib::Request &req, httplib::Response &res) {
         std::cout << std::format("Got request with params:\n");
         for (const auto &[key, value] : req.params) {
