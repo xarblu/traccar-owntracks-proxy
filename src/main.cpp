@@ -161,10 +161,10 @@ int main(int argc, char *argv[]) {
         }
 
         std::cout << "As Owntracks JSON:\n" << payload->location.dump(2) << "\n";
-        std::cout << "Forwarded query parameters:";
+        std::cout << "Forwarded query parameters: ";
         for (auto it = payload->forward.begin(); it != payload->forward.end();) {
             std::cout << it->first;
-            if (++it != payload->forward.end()) std::cout << " ";
+            if (++it != payload->forward.end()) std::cout << ", ";
         }
         std::cout << "\n";
 
