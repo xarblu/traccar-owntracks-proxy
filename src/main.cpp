@@ -139,23 +139,23 @@ int main(int argc, char *argv[]) {
         }
 
         if (accuracyFilter) {
-            // treat null as bad accuracy if the filter is enabled
+            // if filtered contains the reason, else nullopt
+            std::optional<std::string> filtered{std::nullopt};
+
+            // acc is either null (not in traccar payload) or a double (present; parsed with stod)
             if (payload->location["acc"].is_null()) {
-                res.status = httplib::Accepted_202;
-                res.set_content("Point filtered - no accuracy", "text/plain");
-                return;
+                filtered = "Point filtered - accuracy missing or failed to parse";
+            } else if (const double acc = payload->location["acc"].get<double>(); acc > *accuracyFilter) {
+                filtered = std::format(
+                    "Point filtered - accuracy below threshold (got {:.3f} required {:.3f})",
+                    acc, *accuracyFilter
+                );
             }
 
-            // we explicitly parse via stod so this is guaranteed to be a double
-            if (const double acc = payload->location["acc"].get<double>(); acc > *accuracyFilter) {
+            if (filtered) {
+                std::cerr << *filtered << "\n";
                 res.status = httplib::Accepted_202;
-                res.set_content(
-                    std::format(
-                        "Point filtered - accuracy below threshold (got {:.3f} required {:.3f})",
-                        acc, *accuracyFilter
-                    ),
-                    "text/plain"
-                );
+                res.set_content(*filtered, "text/plain");
                 return;
             }
         }
